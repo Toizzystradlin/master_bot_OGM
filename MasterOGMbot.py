@@ -19,6 +19,14 @@ bot = telebot.TeleBot('1044824865:AAGACPaLwqHdOMn5HZamAmSljkoDvSwOiBw')
 
 MQuery = {}
 
+
+sql = "SELECT tg_id FROM employees WHERE master = '1'"
+cursor.execute(sql)
+allowed_users = cursor.fetchall()
+allowed_ids = []
+for i in allowed_users:
+    allowed_ids.append(i[0])
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
     if call.data == 'choose':              # вывод кнопок со списком сотрудников из таблицы бд
@@ -219,14 +227,17 @@ def callback_worker(call):
 @bot.message_handler(commands=['menu'])
 def handle_commands(message):
     if message.text == '/menu':
-        keyboard = telebot.types.InlineKeyboardMarkup()
-        key_1 = telebot.types.InlineKeyboardButton('Новые заявки', callback_data='new_queries')
-        keyboard.add(key_1)
-        key_2 = telebot.types.InlineKeyboardButton('Отложенные заявки', callback_data='postpone_queries')
-        keyboard.add(key_2)
-        bot.send_message(message.chat.id, 'Меню', reply_markup=keyboard)
-    else:
-        None
+        emp_id = str(message.chat.id)
+        if emp_id not in allowed_ids:
+            bot.send_message(message.chat.id, 'Вам не разрешено пользоваться этим ботом')
+        else:
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            key_1 = telebot.types.InlineKeyboardButton('Новые заявки', callback_data='new_queries')
+            keyboard.add(key_1)
+            key_2 = telebot.types.InlineKeyboardButton('Отложенные заявки', callback_data='postpone_queries')
+            keyboard.add(key_2)
+            bot.send_message(message.chat.id, 'Меню', reply_markup=keyboard)
+        
 while True:
     try:
         bot.polling(none_stop=True)
