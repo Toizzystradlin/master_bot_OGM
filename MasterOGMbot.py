@@ -2,9 +2,11 @@ import mysql.connector
 import telebot
 import re
 import json
-
+from telebot import apihelper
 import Send_message
 from datetime import datetime
+
+apihelper.proxy = {'https':'https://51.158.111.229:8811'}  # рабочий прокси Франция
 
 db = mysql.connector.connect(
     host='localhost',
