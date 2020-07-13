@@ -57,10 +57,8 @@ def send_message_2(id_employee, query_id):  # функция для отправ
     print(msg)
 
     keyboard = telebot.types.InlineKeyboardMarkup()
-    key_start_now = telebot.types.InlineKeyboardButton('Начинаю выполнение', callback_data='start_now')
+    key_start_now = telebot.types.InlineKeyboardButton('Принимаю', callback_data='start_now')
     keyboard.add(key_start_now)
-    key_start_later = telebot.types.InlineKeyboardButton('Отложить', callback_data='start_later')
-    keyboard.add(key_start_later)
 
     bot_3.send_message(id_employee, "У вас новая заявка" + "\n" + "*id_заявки: *" + str(query_id) + "\n" +
                        "*Оборудование: *" + msg[0] + "\n" + "*Инв.№: *" + msg[1] + "\n" +
