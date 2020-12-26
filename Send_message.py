@@ -1,6 +1,6 @@
 import mysql.connector
 import json
-query_photo_path = 'C:/Users/User/Desktop/projects/DjangoOGM/main/static/images/query_photos/'
+query_photo_path = 'C:/Users/User/Desktop/projects/DjangoOGM/main/static/images/query_photos/' 
 
 def send_message_4(id_employee, query_id):  # функция для отправки уведомления сотруднику
     import telebot
@@ -20,6 +20,20 @@ def send_message_4(id_employee, query_id):  # функция для отправ
     cursor3.execute(sql, val)
     msg = cursor3.fetchone()
     print(msg)
+
+    sql = "SELECT json_emp FROM queries WHERE query_id = %s"
+    val = (query_id,)
+    cursor3.execute(sql, val)
+    doers_json = cursor3.fetchone()[0]
+    doers_json = json.loads(doers_json)
+    doers = doers_json['doers']
+    doers_string = ''
+    for i in doers:
+        sql = "SELECT fio FROM employees WHERE employee_id = %s"
+        val = (i,)
+        cursor3.execute(sql, val)
+        doers_string = doers_string + cursor3.fetchone()[0]
+
     try:
         cursor3.execute('SELECT photo_name FROM queries WHERE query_id = %s', [query_id])
         photo = cursor3.fetchone()[0]
@@ -28,12 +42,15 @@ def send_message_4(id_employee, query_id):  # функция для отправ
     keyboard = telebot.types.InlineKeyboardMarkup()
     key_start_now = telebot.types.InlineKeyboardButton('Принимаю', callback_data='start_now')
     keyboard.add(key_start_now)
-
-    bot_3.send_message(id_employee, "У вас новая заявка" + "\n" + "*id_заявки: *" + str(query_id) + "\n" +
-                       "*Оборудование: *" + msg[0] + "\n" + "*Инв.№: *" + msg[1] + "\n" +
-                       "*Тип станка: *" + msg[2] + "\n" + "*Участок: *" + msg[3] + "\n" +
-                       "*Причина поломки: *" + msg[4] + "\n" + "*Сообщение: *" + str(msg[5]), reply_markup=keyboard,
-                       parse_mode="Markdown")
-
+    sent = False
+    while sent == False:
+        try:
+            bot_3.send_message(id_employee, "У вас новая заявка" + "\n" + "*id_заявки: *" + str(query_id) + "\n" +
+                               "*Оборудование: *" + msg[0] + "\n" + "*Инв.№: *" + msg[1] + "\n" +
+                               "*Тип станка: *" + msg[2] + "\n" + "*Участок: *" + msg[3] + "\n" +
+                               "*Причина поломки: *" + msg[4] + "\n" + "*Сообщение: *" + str(msg[5]) + "\n" + "*Назначены: *" + doers_string, reply_markup=keyboard,
+                               parse_mode="Markdown")
+            sent = True
+        except: pass
     cursor3.close()
 

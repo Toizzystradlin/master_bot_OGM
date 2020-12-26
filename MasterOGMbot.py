@@ -122,7 +122,7 @@ while True:
                     key_2 = telebot.types.InlineKeyboardButton("Нет", callback_data='sent')
                     keyboard.add(key_2)
                     bot.send_message(call.message.chat.id, fio[0] + ' назначен, назначить еще кого-то?', reply_markup=keyboard)
-                    Send_message.send_message_4(fio[1], MQuery['query_id'])  # отправка исполнителю
+                    #Send_message.send_message_4(fio[1], MQuery['query_id'])  # отправка исполнителю
                 except:
                     print('ошибка в чуз мэн')
 
@@ -205,7 +205,7 @@ while True:
                 key_2 = telebot.types.InlineKeyboardButton("Нет", callback_data='sent')
                 keyboard.add(key_2)
                 bot.send_message(call.message.chat.id, fio[0] + ' назначен, назначить еще кого-то?', reply_markup=keyboard)
-                Send_message.send_message_4(call.message.chat.id, fio[1], MQuery['query_id'])
+                #Send_message.send_message_4(fio[1], MQuery['query_id'])
 
             elif call.data == 'postpone':             # отложить заявку
                 try:
@@ -266,6 +266,51 @@ while True:
                                                parse_mode="Markdown")
                 except: pass
 
+            elif call.data == 'process_queries':
+                try:
+                    db = mysql.connector.connect(
+                        host='localhost',
+                        user='root',
+                        passwd='12345',
+                        port='3306',
+                        database='ogm2'
+                    )
+                    cursor = db.cursor()
+                    sql = "SELECT equipment.eq_name, equipment.invnum, equipment.eq_type, equipment.area, " \
+                          "queries.reason, queries.msg, queries.query_id FROM " \
+                          "queries JOIN equipment ON ((queries.eq_id = equipment.eq_id) AND (" \
+                          "queries.query_status = 'В процессе')) "
+
+                    cursor.execute(sql,)
+                    my_queries = cursor.fetchall()
+                    print(my_queries)
+                    if len(my_queries) == 0:
+                        bot.send_message(call.message.chat.id, 'Заявок в процессе нет')
+                    else:
+                        bot.send_message(call.message.chat.id, 'Заявки в процессе:')
+                        for query in my_queries:
+                            sql = "SELECT json_emp FROM queries WHERE query_id = %s"
+                            val = (query[6],)
+                            cursor.execute(sql, val)
+                            doers_json = cursor.fetchone()[0]
+                            doers_json = json.loads(doers_json)
+                            doers = doers_json['doers']
+                            doers_string = ''
+                            for i in doers:
+                                sql = "SELECT fio FROM employees WHERE employee_id = %s"
+                                val = (i,)
+                                cursor.execute(sql, val)
+                                doers_string = doers_string + cursor.fetchone()[0]
+                            bot.send_message(call.message.chat.id,
+                                               '*Id заявки: *' + str(query[6]) + "\n" + '*Наименование: *' + str(
+                                                   query[0]) + "\n" + "*Инв.№: *" + str(query[1]) + "\n" +
+                                               "*Тип: *" + str(query[2]) + "\n" + "*Участок: *" + query[
+                                                   3] + "\n" + "*Причина поломки: *" +
+                                               query[4] + "\n" + "*Сообщение: *" + str(query[5]) + "\n" + "*Назначены: *" + str(doers_string),
+                                               parse_mode="Markdown")
+                except: pass
+
+
             elif call.data == 'postpone_queries':
                 try:
                     db = mysql.connector.connect(
@@ -322,6 +367,9 @@ while True:
                     n += 1
                     bot.delete_message(call.message.chat.id, call.message.message_id - n)
                 bot.delete_message(call.message.chat.id, call.message.message_id)
+
+                #Send_message.send_message_4(fio[1], MQuery['query_id'])
+
                 sql = "SELECT json_emp FROM queries WHERE query_id = %s"  # получение json
                 val = (MQuery['query_id'],)
                 cursor.execute(sql, val)
@@ -330,9 +378,11 @@ while True:
                 doers = json_emp_dict['doers']
                 doers_string = ''
                 for doer in doers:
-                    cursor.execute('SELECT fio FROM employees WHERE employee_id = %s', [doer])
-                    fio = cursor.fetchone()[0]
-                    doers_string = doers_string + ' ' + fio
+                    cursor.execute('SELECT fio, tg_id FROM employees WHERE employee_id = %s', [doer])
+                    fio = cursor.fetchone()
+                    #tg_id = cursor.fetchone()[1]
+                    doers_string = doers_string + ' ' + fio[0]
+                    Send_message.send_message_4(fio[1], MQuery['query_id'])
                 bot.send_message(call.message.chat.id, 'Сотрудники назначены: ' + doers_string)
 
         @bot.message_handler(commands=['menu', 'task'])
@@ -347,6 +397,8 @@ while True:
                     keyboard.add(key_1)
                     key_2 = telebot.types.InlineKeyboardButton('Отложенные заявки', callback_data='postpone_queries')
                     keyboard.add(key_2)
+                    key_3 = telebot.types.InlineKeyboardButton('Заявки в процессе', callback_data='process_queries')
+                    keyboard.add(key_3)
                     bot.send_message(message.chat.id, 'Меню', reply_markup=keyboard)
 
             if message.text == '/task':
@@ -374,3 +426,4 @@ while True:
             except Exception as e:
                 print(e)
     except: pass
+ 
