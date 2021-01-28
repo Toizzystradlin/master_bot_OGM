@@ -17,7 +17,7 @@ def send_message_1(query_id, name, inv, place, cause, msg):  # функция д
     masters_id = cursor3.fetchall()
     print(masters_id)
 
-    bot_2 = telebot.TeleBot('1044824865:AAGACPaLwqHdOMn5HZamAmSljkoDvSwOiBw')
+    bot_2 = telebot.TeleBot('#')
 
     keyboard = telebot.types.InlineKeyboardMarkup()
     key_choose = telebot.types.InlineKeyboardButton('Назначить ...', callback_data='choose')
@@ -39,7 +39,7 @@ def send_message_1(query_id, name, inv, place, cause, msg):  # функция д
 
 def send_message_2(id_employee, query_id):  # функция для отправки уведомления сотруднику
     import telebot
-    bot_3 = telebot.TeleBot('1048673690:AAHPT1BfgqOoQ1bBXT1dcSiClLzwwOq0sPU')
+    bot_3 = telebot.TeleBot('#')
     db = mysql.connector.connect(
         host='localhost',
         user='root',
@@ -73,7 +73,7 @@ def send_message_2(id_employee, query_id):  # функция для отправ
 
 def send_message_3(query_id):
     import telebot
-    bot_3 = telebot.TeleBot('1044824865:AAGACPaLwqHdOMn5HZamAmSljkoDvSwOiBw')
+    bot_3 = telebot.TeleBot('#')
     db = mysql.connector.connect(
         host='localhost',
         user='root',
