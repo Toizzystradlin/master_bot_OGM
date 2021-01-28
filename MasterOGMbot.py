@@ -14,7 +14,7 @@ db = mysql.connector.connect(
     database='ogm2'
 )
 cursor = db.cursor(buffered=True)
-bot = telebot.TeleBot('1044824865:AAGACPaLwqHdOMn5HZamAmSljkoDvSwOiBw')
+bot = telebot.TeleBot('#')
 # bot.send_message(392674056, 'бип боп')
 
 MQuery = {}
